@@ -1,0 +1,32 @@
+import os
+import shutil
+
+# === CONFIGURATION ===
+INPUT_DIR = "home/your/path"
+DEST_DIR = "home/your/output/path"
+OVERWRITE = False  # Set to True if you want to overwrite existing files
+
+# === CREATE DESTINATION DIRECTORY ===
+os.makedirs(DEST_DIR, exist_ok=True)
+
+copied_count = 0
+
+for root, dirs, files in os.walk(INPUT_DIR):
+    if os.path.basename(root) == "file name":
+        parent_folder = os.path.basename(os.path.dirname(root))
+        for file in files:
+            if file.endswith(".csv"):
+                src_path = os.path.join(root, file)
+                dest_filename = f"{parent_folder}__{file}"
+                dest_path = os.path.join(DEST_DIR, dest_filename)
+
+                if not OVERWRITE and os.path.exists(dest_path):
+                    print(f"Skipping (exists): {dest_filename}")
+                    continue
+
+                shutil.copy2(src_path, dest_path)
+                print(f"Copied: {dest_filename}")
+                copied_count += 1
+
+print(f"\n Done. Total CSV files copied: {copied_count}")
+print(f"All files are saved in: {DEST_DIR}")
