@@ -1,0 +1,103 @@
+#!/bin/bash
+set -euo pipefail
+
+# DESCRIPTION:
+# Copy all .csv files from each "300-900" subdir found within 
+# every immediate subdir of INPUT_DIR into DEST_DIR with unique names.
+# Usage: ./batch_csv_collector.sh [--overwrite] [input_dir]
+# Default input: /home/arnav/Desktop/Backup_arnav/bgnd_fitted_lc
+# Output is always: /home/arnav/bgnd_sub_lightcurve
+
+DEFAULT_INPUT_DIR="/home/arnav/Desktop/Backup_arnav/bgnd_fitted_lc"
+DEST_DIR="/home/arnav/bgnd_sub_lightcurve"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_FILE="$SCRIPT_DIR/copy_log.txt"
+
+# --- ARGUMENTS ---
+OVERWRITE=0
+INPUT_DIR=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --overwrite) OVERWRITE=1; shift ;;
+        *) INPUT_DIR="$1"; shift ;;
+    esac
+done
+
+if [[ -z "$INPUT_DIR" ]]; then
+    INPUT_DIR="$DEFAULT_INPUT_DIR"
+fi
+
+# --- LOGGING ---
+exec > >(tee -i "$LOG_FILE") 2>&1
+
+echo "========== $(date) =========="
+echo "Batch CSV Collector"
+echo "Input: $INPUT_DIR"
+echo "Output: $DEST_DIR"
+echo "Overwrite: $([[ $OVERWRITE -eq 1 ]] && echo 'YES' || echo 'NO')"
+
+# --- VALIDATION ---
+if [[ ! -d "$INPUT_DIR" ]]; then
+    echo "ERROR: Input directory '$INPUT_DIR' does not exist." >&2
+    exit 1
+fi
+mkdir -p "$DEST_DIR"
+if [[ ! -w "$DEST_DIR" ]]; then
+    echo "ERROR: Output directory '$DEST_DIR' is not writable." >&2
+    exit 1
+fi
+
+# --- MAIN ---
+folders_found=0
+folders_with_csvs=0
+copied_files=0
+shopt -s nullglob   # Don't expand *.csv to literal if none match
+
+for folder in "$INPUT_DIR"/*; do
+    if [[ -d "$folder" ]]; then
+        ((folders_found++))
+        subdir="$folder/300-900"
+        if [[ -d "$subdir" ]]; then
+            csv_files=("$subdir"/*.csv)
+            if [[ ${#csv_files[@]} -gt 0 ]]; then
+                ((folders_with_csvs++))
+                parentname="$(basename "$folder")"
+                for csv in "${csv_files[@]}"; do
+                    if [[ -f "$csv" ]]; then
+                        basecsv="$(basename "$csv")"
+                        outfile="$DEST_DIR/${parentname}__${basecsv}"
+                        if [[ $OVERWRITE -eq 1 ]]; then
+                            cp -- "$csv" "$outfile"
+                        else
+                            if [[ -e "$outfile" ]]; then
+                                ext="${outfile##*.}"
+                                main="${outfile%.*}"
+                                outfile="${main}_$(date +%s%N).${ext}"
+                            fi
+                            cp -n -- "$csv" "$outfile"
+                        fi
+                        ((copied_files++))
+                        echo "Copied: $csv -> $outfile"
+                    fi
+                done
+                echo "Processed: $subdir"
+            else
+                echo "No CSV in: $subdir"
+            fi
+        else
+            echo "No 300-900 subdir in: $folder"
+        fi
+    fi
+done
+
+echo
+if [[ $folders_found -eq 0 ]]; then
+    echo "No subfolders found in $INPUT_DIR."
+else
+    echo "Total scanned: $folders_found; With CSVs: $folders_with_csvs; CSVs copied: $copied_files"
+fi
+echo "All files now in: $DEST_DIR"
+echo "========== $(date) =========="
+
+exit 0
