@@ -1,0 +1,36 @@
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+DATA_DIR = "/home/arnav/bgnd_sub_lightcurve"
+FILES = sorted([f for f in os.listdir(DATA_DIR) if f.endswith(".csv")])
+
+
+plt.figure(figsize=(10, 6))
+plt.title(" Plot of the Background Subtracted Light Curve")
+plt.xlabel("Time (s)")
+plt.ylabel("Flux")
+
+
+N = 5  
+for i, fname in enumerate(FILES[:N]):
+    fpath = os.path.join(DATA_DIR, fname)
+    df = pd.read_csv(fpath)
+
+    # Try to detect column names automatically
+    if df.shape[1] < 2:
+        print(f"Skipping {fname} — not enough columns")
+        continue
+
+    # Try common column name cases
+    colnames = df.columns.tolist()
+    time_col = colnames[0]
+    flux_col = colnames[1]
+
+    plt.plot(df[time_col], df[flux_col], label=fname, alpha=0.7)
+
+plt.legend(loc="upper right", fontsize="small")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
