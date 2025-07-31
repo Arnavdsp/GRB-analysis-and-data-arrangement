@@ -1,0 +1,57 @@
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import pywt
+
+DATA_DIR = "/home/arnav/bgnd_sub_lightcurve"
+FILES = sorted([f for f in os.listdir(DATA_DIR) if f.endswith(".csv")])
+
+def denoise_wavelet(signal, wavelet='db1', level=1):
+    # Discrete Wavelet Transform
+    coeff = pywt.wavedec(signal, wavelet, mode='symmetric', level=level)
+    sigma = np.median(np.abs(coeff[-level])) / 0.6745
+    thresh = sigma * np.sqrt(2 * np.log(len(signal)))
+    coeff[1:] = (pywt.threshold(i, value=thresh, mode='soft') for i in coeff[1:])
+    return pywt.waverec(coeff, wavelet, mode='symmetric')
+
+plt.figure(figsize=(12, 2 * 5))
+plt.suptitle("Original vs. Denoised Light Curves")
+
+N = 5
+for i, fname in enumerate(FILES[:N]):
+    fpath = os.path.join(DATA_DIR, fname)
+    df = pd.read_csv(fpath)
+
+    # Skip if not proper
+    if df.shape[1] < 2:
+        print(f"Skipping {fname} — not enough columns")
+        continue
+
+    time_col = df.columns[0]
+    flux_col = df.columns[1]
+
+    time = df[time_col].values
+    flux = df[flux_col].values
+
+    # Denoise the flux
+    denoised_flux = denoise_wavelet(flux, wavelet='db1', level=1)
+    denoised_flux = denoised_flux[:len(flux)]  # Match original length
+
+    plt.subplot(N, 2, 2 * i + 1)
+    plt.plot(time, flux, label='Original', color='blue')
+    plt.title(f"{fname} - Original")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Flux")
+    plt.grid(True)
+
+    plt.subplot(N, 2, 2 * i + 2)
+    plt.plot(time, denoised_flux, label='Denoised', color='orange')
+    plt.title(f"{fname} - Denoised")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Flux")
+    plt.grid(True)
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+plt.show()
+
