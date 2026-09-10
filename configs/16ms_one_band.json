@@ -1,0 +1,63 @@
+{
+  "data_dirs": [
+    "."
+  ],
+  "output_dir": "results/16ms_one_band",
+  "catalog": null,
+  "annotations": "data/annotated_grbs.csv",
+  "denoise": {
+    "enabled": true,
+    "wavelets": [
+      "db1",
+      "db4",
+      "db6",
+      "sym4",
+      "sym8",
+      "coif3",
+      "haar"
+    ],
+    "levels": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "criterion": "bic",
+    "mode": "soft",
+    "signal_extension": "symmetric"
+  },
+  "features": {
+    "bands": [
+      "50-300"
+    ],
+    "window": "t90",
+    "window_start": 0.0,
+    "resample_dt": 0.016,
+    "pad_length": null,
+    "normalize": "fluence",
+    "representation": "fft",
+    "drop_dc": true
+  },
+  "reduce": {
+    "use_pca": false,
+    "pca_components": 0.95,
+    "n_neighbors": 5,
+    "min_dist": 0.001,
+    "n_components": 2,
+    "metric": "euclidean",
+    "random_state": 42,
+    "standardize": true
+  },
+  "cluster": {
+    "algorithm": "hdbscan",
+    "min_cluster_size": 25,
+    "min_samples": null,
+    "eps": 0.5,
+    "n_clusters": 5,
+    "random_state": 42
+  },
+  "powerlaw_fmin": null,
+  "powerlaw_fmax": null,
+  "make_plots": true
+}

@@ -1,0 +1,23 @@
+# GRBs annotated on the embeddings, as in the thesis: bursts with a confirmed
+# or strongly favoured supernova or kilonova counterpart. The question the
+# annotation answers is whether counterpart type groups together in the
+# embedding - in the thesis it does not.
+#
+# The `trigger` column is optional. Left empty, grbml.catalog.resolve_trigger
+# infers it from the GRB name and the triggers present in the sample, which is
+# only reliable when every GRB of that date is in the sample. Fill the column
+# in from the Fermi-GBM burst catalogue before using these annotations for
+# anything that matters.
+grb,class,trigger,note
+GRB 150101B,kilonova,,kilonova candidate
+GRB 160821B,kilonova,,kilonova candidate
+GRB 170817A,kilonova,,GW170817 counterpart
+GRB 211211A,kilonova,,long GRB with a kilonova
+GRB 230307A,kilonova,,long GRB with a kilonova
+GRB 171010A,supernova,,SN 2017htp
+GRB 180720B,supernova,,supernova signature reported
+GRB 180728A,supernova,,SN 2018fip
+GRB 190114C,supernova,,supernova counterpart
+GRB 190829A,supernova,,SN 2019oyw
+GRB 200826A,supernova,,short GRB with a supernova
+GRB 221009A,supernova,,SN 2022xiw

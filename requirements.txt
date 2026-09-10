@@ -1,0 +1,14 @@
+# Core pipeline requirements.
+numpy>=1.22
+scipy>=1.8
+pandas>=1.4
+matplotlib>=3.5
+scikit-learn>=1.3
+PyWavelets>=1.3
+
+# Manifold learning. Without it only the PCA embedding is available.
+umap-learn>=0.5.3
+
+# Optional: standalone HDBSCAN. scikit-learn >= 1.3 ships sklearn.cluster.HDBSCAN,
+# which grbml uses automatically when this package is absent.
+# hdbscan>=0.8.29
